@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.log
+data/
+.env
+.vite/
+Catan_6_Kisilik_Baski/

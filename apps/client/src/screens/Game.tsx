@@ -93,14 +93,14 @@ export function Game() {
   const boardProps = { view, theme, highlights, onPick, lastBuilt };
 
   return (
-    <div className="game">
+    <div className={`game${myTurn ? ' mine' : ''}`}>
       <header className="top">
         <PlayersStrip view={view} room={room} />
       </header>
 
       <main className="board-wrap">
         {use3d ? (
-          <Suspense fallback={<div className="board-loading"><span className="spinner" /></div>}>
+          <Suspense fallback={<div className="board-loading"><span className="spinner" aria-hidden /></div>}>
             <Board3D {...boardProps} onFail={fail3d} />
           </Suspense>
         ) : (

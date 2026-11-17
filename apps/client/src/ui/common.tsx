@@ -1,11 +1,11 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { RESOURCES, bagTotal, type Resource, type ResourceBag } from '@kervan/shared';
 import { useStore } from '../store';
 import { useLang, useNames, useT } from '../hooks';
 import { errorText, translate } from '../i18n';
-import { Ico, ResIcon } from './Icons';
+import { Ico, ResIcon, Star8 } from './Icons';
 
-/** Modal: bottom sheet on phones, centred card on wide screens. */
+/** Modal lacquer sheet: slides up from the bottom on phones, centred on wide screens. */
 export function Sheet({
   title,
   onClose,
@@ -17,6 +17,15 @@ export function Sheet({
   children: ReactNode;
   wide?: boolean;
 }) {
+  const t = useT();
+  const titleId = useId();
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // Move focus into the sheet so keyboard users land in it; restore it on close.
+    const prev = document.activeElement as HTMLElement | null;
+    box.current?.focus({ preventScroll: true });
+    return () => prev?.focus?.({ preventScroll: true });
+  }, []);
   useEffect(() => {
     if (!onClose) return;
     const h = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -25,15 +34,20 @@ export function Sheet({
   }, [onClose]);
   return (
     <div className="sheet-backdrop" onPointerDown={(e) => e.target === e.currentTarget && onClose?.()}>
-      <div className={`sheet${wide ? ' sheet-wide' : ''}`} role="dialog" aria-modal="true">
-        <div className="band" />
-        <header className="sheet-head">
-          <h2>{title}</h2>
-          {onClose && (
-            <button className="icon-btn" onClick={onClose} aria-label="close">
-              <Ico name="close" />
-            </button>
-          )}
+      <div ref={box} tabIndex={-1} className={`sheet${wide ? ' sheet-wide' : ''}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        <header className="strip">
+          <div className="sheet-grip" aria-hidden />
+          <div className="sheet-head">
+            <h2 id={titleId}>
+              <Star8 size={16} />
+              {title}
+            </h2>
+            {onClose && (
+              <button className="icon-btn" onClick={onClose} aria-label={t('common.close')}>
+                <Ico name="close" />
+              </button>
+            )}
+          </div>
         </header>
         <div className="sheet-body">{children}</div>
       </div>
@@ -62,16 +76,16 @@ export function ResourcePicker({
         const canAdd = value[r] < cap && (total === undefined || sum < total);
         return (
           <div key={r} className={`picker-row${value[r] > 0 ? ' on' : ''}`}>
-            <ResIcon res={r} size={28} />
+            <ResIcon res={r} size={34} />
             <span className="picker-name">
               {names.res(r)}
               {max && <small> / {cap}</small>}
             </span>
-            <button className="step-btn" disabled={value[r] <= 0} onClick={() => onChange({ ...value, [r]: value[r] - 1 })} aria-label="-">
+            <button className="step-btn" disabled={value[r] <= 0} onClick={() => onChange({ ...value, [r]: value[r] - 1 })} aria-label={`${names.res(r)} −1`}>
               −
             </button>
             <b className="picker-n">{value[r]}</b>
-            <button className="step-btn" disabled={!canAdd} onClick={() => onChange({ ...value, [r]: value[r] + 1 })} aria-label="+">
+            <button className="step-btn" disabled={!canAdd} onClick={() => onChange({ ...value, [r]: value[r] + 1 })} aria-label={`${names.res(r)} +1`}>
               +
             </button>
           </div>
@@ -103,7 +117,18 @@ export function ReconnectBanner() {
   if (!room || conn === 'open' || conn === 'idle') return null;
   return (
     <div className="reconnect" role="status">
-      <span className="spinner" /> {t('conn.reconnecting')}
+      <span className="spinner" aria-hidden /> {t('conn.reconnecting')}
+    </div>
+  );
+}
+
+/** Room code as a gold-leaf plate, one cell per character so it is easy to read aloud. */
+export function CodePlate({ code, small }: { code: string; small?: boolean }) {
+  return (
+    <div className={`plate${small ? ' small' : ''}`} role="img" aria-label={code.split('').join(' ')}>
+      {code.split('').map((ch, i) => (
+        <span key={i}>{ch}</span>
+      ))}
     </div>
   );
 }

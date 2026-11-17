@@ -26,25 +26,37 @@ export interface ThemeDef {
     bandit: string;
     stars: boolean;
   };
+  /** 2D interface palette. Every field becomes a CSS custom property (see applyThemeVars). */
   ui: {
     dark: boolean;
-    bg: string;
-    bg2: string;
-    panel: string;
-    panel2: string;
-    ink: string;
-    muted: string;
-    line: string;
-    accent: string;
+    bg: string; // page ground (night lapis)
+    bg2: string; // deeper wells: inputs, sheet backdrops
+    panel: string; // lacquer panels
+    panel2: string; // raised lacquer: buttons, rows
+    ink: string; // body text
+    muted: string; // secondary text, AA on panel and panel2
+    line: string; // hairline frame colour (gold leaf at ~35%)
+    gold: string; // primary leaf: primary button, "your turn", frames
+    goldHi: string; // highlight of the leaf (top of buttons, title)
+    goldLo: string; // shadow of the leaf
+    goldInk: string; // text on gold
+    accent: string; // kept for the 3D board (placement markers) = gold family
     accentInk: string;
-    accent2: string;
-    gold: string;
+    accent2: string; // information / ready / ok (turquoise)
+    accent2Ink: string; // readable accent2 text on panels
+    warn: string; // warnings, 6 and 8, the bandit (fills)
+    warnInk: string; // readable warn text on panels
+    glow: string; // edge glow colour, 'transparent' when the theme has none
+    pattern: number; // eight-point star pattern opacity (0..1)
     fontDisplay: string;
     fontBody: string;
+    displayStyle: 'normal' | 'italic';
   };
 }
 
 const SYS = 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const DISPLAY = `Alegreya, Georgia, "Times New Roman", serif`;
+const BODY = `"Alegreya Sans", ${SYS}`;
 
 export const THEMES: Record<ThemeId, ThemeDef> = {
   anatolia: {
@@ -94,20 +106,29 @@ export const THEMES: Record<ThemeId, ThemeDef> = {
       stars: false,
     },
     ui: {
-      dark: false,
-      bg: '#f3e6cc',
-      bg2: '#ead7b2',
-      panel: '#fbf3e0',
-      panel2: '#f3e3c2',
-      ink: '#3a2418',
-      muted: '#7d6450',
-      line: '#d6bb8d',
-      accent: '#a8432a',
-      accentInk: '#fff6e6',
-      accent2: '#1d7874',
-      gold: '#c48f22',
-      fontDisplay: '"Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif',
-      fontBody: SYS,
+      dark: true,
+      bg: '#0f1d33',
+      bg2: '#0a1424',
+      panel: '#18304f',
+      panel2: '#20406a',
+      ink: '#f1e6cf',
+      muted: '#b4bdcc',
+      line: 'rgba(224, 179, 84, .38)',
+      gold: '#e0b354',
+      goldHi: '#f6dc96',
+      goldLo: '#a8762a',
+      goldInk: '#261803',
+      accent: '#e0b354',
+      accentInk: '#261803',
+      accent2: '#2fa39a',
+      accent2Ink: '#6fd6cb',
+      warn: '#c8412f',
+      warnInk: '#ff9a84',
+      glow: 'transparent',
+      pattern: 0.08,
+      fontDisplay: DISPLAY,
+      fontBody: BODY,
+      displayStyle: 'normal',
     },
   },
   archipelago: {
@@ -157,20 +178,29 @@ export const THEMES: Record<ThemeId, ThemeDef> = {
       stars: false,
     },
     ui: {
-      dark: false,
-      bg: '#e4f3f1',
-      bg2: '#cfe9e6',
-      panel: '#f8fdfc',
-      panel2: '#e6f4f2',
-      ink: '#12343b',
-      muted: '#4f7078',
-      line: '#b4d8d6',
-      accent: '#d9583f',
-      accentInk: '#ffffff',
-      accent2: '#12788c',
-      gold: '#d69a1e',
-      fontDisplay: '"Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif',
-      fontBody: SYS,
+      dark: true,
+      bg: '#073642',
+      bg2: '#052a33',
+      panel: '#0e4d5c',
+      panel2: '#14606f',
+      ink: '#f4fbf8',
+      muted: '#b3d6d2',
+      line: 'rgba(244, 201, 93, .4)',
+      gold: '#f4c95d',
+      goldHi: '#fff0b8',
+      goldLo: '#c08a1f',
+      goldInk: '#2a1c02',
+      accent: '#f4c95d',
+      accentInk: '#2a1c02',
+      accent2: '#3e8e4e',
+      accent2Ink: '#9ee3a4',
+      warn: '#e5546a',
+      warnInk: '#ffa3b0',
+      glow: 'transparent',
+      pattern: 0.07,
+      fontDisplay: DISPLAY,
+      fontBody: BODY,
+      displayStyle: 'italic',
     },
   },
   space: {
@@ -221,19 +251,28 @@ export const THEMES: Record<ThemeId, ThemeDef> = {
     },
     ui: {
       dark: true,
-      bg: '#0c1022',
-      bg2: '#12172e',
-      panel: '#181d38',
-      panel2: '#222849',
-      ink: '#e6e9ff',
-      muted: '#98a0c8',
-      line: '#333b66',
-      accent: '#49d6b6',
-      accentInk: '#06221c',
+      bg: '#0b0a1a',
+      bg2: '#07060f',
+      panel: '#1b1838',
+      panel2: '#26224b',
+      ink: '#eceaff',
+      muted: '#aeaad6',
+      line: 'rgba(70, 224, 216, .4)',
+      gold: '#46e0d8',
+      goldHi: '#b8fff9',
+      goldLo: '#1f9a94',
+      goldInk: '#03201e',
+      accent: '#46e0d8',
+      accentInk: '#03201e',
       accent2: '#8f7bff',
-      gold: '#ffc857',
-      fontDisplay: '"Segoe UI", "Avenir Next", "Helvetica Neue", Arial, sans-serif',
-      fontBody: SYS,
+      accent2Ink: '#c3b8ff',
+      warn: '#d94bc8',
+      warnInk: '#ff9cf1',
+      glow: 'rgba(70, 224, 216, .32)',
+      pattern: 0.06,
+      fontDisplay: BODY,
+      fontBody: BODY,
+      displayStyle: 'normal',
     },
   },
 };
@@ -242,27 +281,24 @@ export const THEME_IDS: ThemeId[] = ['anatolia', 'archipelago', 'space'];
 
 /** Push the UI palette into CSS custom properties. */
 export function applyThemeVars(t: ThemeDef): void {
-  const s = document.documentElement.style;
+  const root = document.documentElement;
+  const s = root.style;
   const u = t.ui;
   const set = (k: string, v: string) => s.setProperty(k, v);
-  set('--bg', u.bg);
-  set('--bg2', u.bg2);
-  set('--panel', u.panel);
-  set('--panel2', u.panel2);
-  set('--ink', u.ink);
-  set('--muted', u.muted);
-  set('--line', u.line);
-  set('--accent', u.accent);
-  set('--accent-ink', u.accentInk);
-  set('--accent2', u.accent2);
-  set('--gold', u.gold);
-  set('--font-display', u.fontDisplay);
-  set('--font-body', u.fontBody);
-  set('--backdrop', t.palette.backdrop);
+  const vars: [string, string][] = [
+    ['--bg', u.bg], ['--bg2', u.bg2], ['--panel', u.panel], ['--panel2', u.panel2],
+    ['--ink', u.ink], ['--muted', u.muted], ['--line', u.line],
+    ['--gold', u.gold], ['--gold-hi', u.goldHi], ['--gold-lo', u.goldLo], ['--gold-ink', u.goldInk],
+    ['--accent2', u.accent2], ['--accent2-ink', u.accent2Ink], ['--warn', u.warn], ['--warn-ink', u.warnInk],
+    ['--glow', u.glow], ['--pattern', String(u.pattern)],
+    ['--font-display', u.fontDisplay], ['--font-body', u.fontBody], ['--display-style', u.displayStyle],
+    ['--backdrop', t.palette.backdrop], ['--sea', t.palette.sea],
+  ];
+  for (const [k, v] of vars) set(k, v);
   for (const [k, v] of Object.entries(t.palette.resource)) set(`--res-${k}`, v);
-  document.documentElement.dataset.theme = t.id;
-  document.documentElement.style.colorScheme = u.dark ? 'dark' : 'light';
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', u.dark ? u.bg : u.accent);
+  root.dataset.theme = t.id;
+  s.colorScheme = u.dark ? 'dark' : 'light';
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', u.bg);
 }
 
 /** Darken (amt < 0) or lighten (amt > 0) a #rrggbb colour; amt in -1..1. */

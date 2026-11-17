@@ -11,11 +11,14 @@ import {
   type ResourceBag,
 } from '@kervan/shared';
 import { useStore, type BuildMode } from '../store';
-import { useNames, useT } from '../hooks';
+import { useNames, useT, useThemeDef } from '../hooks';
 import type { Key } from '../i18n';
 import * as eng from '../engineSafe';
-import { CostView, Ico, ResIcon } from '../ui/Icons';
+import { CostView, Ico, ResIcon, type IcoName } from '../ui/Icons';
 import { ResourcePicker, Sheet } from '../ui/common';
+import { PieceIcon } from '../ui/Pieces';
+
+const CARD_ICON: Record<DecreeCard, IcoName> = { raider: 'swords', caravan: 'route', bounty: 'hand', bargain: 'bank', glory: 'crown' };
 
 interface Props {
   view: PlayerView;
@@ -33,6 +36,7 @@ export function BuildDialog({ view, me, onClose }: Props) {
   const t = useT();
   const names = useNames();
   const setMode = useStore((s) => s.setMode);
+  const theme = useThemeDef();
   const upgrades = eng.upgradeVertices(view, me.seat).length;
   const rows: { kind: BuildMode; spots: number; free?: boolean; points: number }[] = [
     { kind: 'road', spots: eng.roadEdges(view, me.seat).length, free: view.freeRoads > 0, points: 0 },
@@ -50,12 +54,15 @@ export function BuildDialog({ view, me, onClose }: Props) {
           const isUpgrade = row.kind === 'keep' || row.kind === 'market';
           return (
             <div key={row.kind} className={`list-row${reason ? ' dim' : ''}`}>
+              <span className="piece-ico">
+                <PieceIcon kind={row.kind} color={me.color} gold={theme.ui.gold} />
+              </span>
               <div className="list-main">
                 <b>{names.piece(row.kind)}</b>
                 <small>
-                  {isUpgrade && `${t('build.upgradeOf', { outpost: names.piece('outpost') })} · `}
-                  {row.points > 0 && `${t('build.points', { n: row.points })} · `}
-                  {t('build.left', { n: left })}
+                  {isUpgrade && <span>{t('build.upgradeOf', { outpost: names.piece('outpost') })}</span>}
+                  {row.points > 0 && <span>{t('build.points', { n: row.points })}</span>}
+                  <span>{t('build.left', { n: left })}</span>
                 </small>
                 <div className="list-cost">{row.free ? <span className="chip">{t('build.free')}</span> : <CostView item={row.kind} />}</div>
                 {reason && <small className="warn">{reason}</small>}
@@ -122,14 +129,17 @@ export function CardsDialog({ view, me, onClose, canAct }: Props & { canAct: boo
   return (
     <Sheet title={t('cards.title', { decree: names.decree })} onClose={onClose}>
       <div className="list-row buy-row">
+        <span className="piece-ico">
+          <Ico name="scroll" size={22} />
+        </span>
         <div className="list-main">
           <b>{t('cards.buy', { decree: names.decree })}</b>
           <div className="list-cost">
             <CostView item="card" />
           </div>
           <small className={view.deckCount === 0 ? 'warn' : ''}>
-            {view.deckCount > 0 ? t('cards.deck', { n: view.deckCount }) : t('cards.deckEmpty')}
-            {myTurn && view.step === 'roll' && ` · ${t('cards.afterRoll')}`}
+            <span>{view.deckCount > 0 ? t('cards.deck', { n: view.deckCount }) : t('cards.deckEmpty')}</span>
+            {myTurn && view.step === 'roll' && <span>{t('cards.afterRoll')}</span>}
           </small>
         </div>
         <button className="btn primary" disabled={!canBuy} onClick={() => act({ type: 'buyCard' })}>
@@ -140,9 +150,11 @@ export function CardsDialog({ view, me, onClose, canAct }: Props & { canAct: boo
       {counts.size + fresh.size === 0 && <p className="muted">{t('cards.none')}</p>}
       <div className="cards">
         {[...counts.entries()].map(([card, n]) => (
-          <div key={card} className={`decree decree-${card}`}>
+          <div key={card} className={`decree-c decree-${card}`}>
             <div className="decree-head">
-              <Ico name={card === 'glory' ? 'star' : card === 'raider' ? 'swords' : 'scroll'} size={16} />
+              <span className="seal">
+                <Ico name={CARD_ICON[card]} size={16} />
+              </span>
               <b>{names.card(card)}</b>
               {n > 1 && <span className="count">×{n}</span>}
             </div>
@@ -155,9 +167,11 @@ export function CardsDialog({ view, me, onClose, canAct }: Props & { canAct: boo
           </div>
         ))}
         {[...fresh.entries()].map(([card, n]) => (
-          <div key={`n-${card}`} className={`decree decree-${card} fresh`}>
+          <div key={`n-${card}`} className={`decree-c decree-${card} fresh`}>
             <div className="decree-head">
-              <Ico name={card === 'glory' ? 'star' : card === 'raider' ? 'swords' : 'scroll'} size={16} />
+              <span className="seal">
+                <Ico name={CARD_ICON[card]} size={16} />
+              </span>
               <b>{names.card(card)}</b>
               {n > 1 && <span className="count">×{n}</span>}
             </div>
@@ -188,11 +202,10 @@ export function BankDialog({ view, me, onClose }: Props) {
           const rt = rate(r);
           return (
             <button key={r} className={`res-opt${give === r ? ' on' : ''}`} disabled={bag[r] < rt} onClick={() => { setGive(r); if (want === r) setWant(null); }}>
-              <ResIcon res={r} size={30} />
+              <ResIcon res={r} size={34} />
               <b>{rt}:1</b>
-              <small>
-                {names.res(r)} · {bag[r]}
-              </small>
+              <small>{names.res(r)}</small>
+              <small>{t('bank.have', { n: bag[r] })}</small>
             </button>
           );
         })}
@@ -201,7 +214,7 @@ export function BankDialog({ view, me, onClose }: Props) {
       <div className="res-grid">
         {RESOURCES.map((r) => (
           <button key={r} className={`res-opt${want === r ? ' on' : ''}`} disabled={r === give} onClick={() => setWant(r)}>
-            <ResIcon res={r} size={30} />
+            <ResIcon res={r} size={34} />
             <b>+1</b>
             <small>{names.res(r)}</small>
           </button>
@@ -209,7 +222,7 @@ export function BankDialog({ view, me, onClose }: Props) {
       </div>
       <div className="sheet-foot">
         <span className="muted">
-          {give && want ? `${rate(give)} ${names.res(give)} → 1 ${names.res(want)}` : ''}
+          {give && want ? t('bank.summary', { n: rate(give), give: names.res(give), want: names.res(want) }) : ''}
         </span>
         <button className="btn primary" disabled={!ok} onClick={() => ok && act({ type: 'bankTrade', give: give!, want: want! })}>
           {t('bank.do')}
@@ -309,9 +322,11 @@ export function SevenDialog() {
     <Sheet title={t('seven.title')}>
       <div className="choice">
         <button className="btn big primary" onClick={() => setPick(emptyBag())}>
+          <Ico name="hand" />
           {t('seven.tribute')}
         </button>
         <button className="btn big" onClick={() => act({ type: 'sevenChoice', choice: 'bandit' })}>
+          <Ico name="swords" />
           {t('seven.bandit', { bandit: names.bandit })}
         </button>
       </div>
@@ -330,7 +345,7 @@ export function StealDialog({ view }: { view: PlayerView }) {
           if (!p) return null;
           return (
             <button key={seat} className="btn big victim" style={{ ['--pc' as string]: p.color }} onClick={() => act({ type: 'steal', victim: seat })}>
-              <i className="pl-dot" />
+              <i className="pl-dot big" />
               <b>{p.name}</b>
               <small>{t('steal.cards', { n: p.resourceCount })}</small>
             </button>

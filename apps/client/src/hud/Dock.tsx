@@ -1,7 +1,8 @@
-import { HAND_LIMIT, RESOURCES, type PlayerView, type PublicPlayer } from '@kervan/shared';
+import { useEffect, useRef, useState } from 'react';
+import { HAND_LIMIT, RESOURCES, type PlayerView, type PublicPlayer, type Resource } from '@kervan/shared';
 import { useStore } from '../store';
 import { useNames, useT } from '../hooks';
-import { BagView, Ico, ResIcon } from '../ui/Icons';
+import { BagView, Ico, ResEmblem, Star8 } from '../ui/Icons';
 
 export type DialogName = 'build' | 'cards' | 'bank' | 'trade' | 'discard' | 'menu' | null;
 
@@ -14,24 +15,36 @@ const PIPS: Record<number, number[]> = {
   6: [0, 2, 3, 5, 6, 8],
 };
 
+/** Cube rotation that brings face n to the front (faces are laid out in .face.f1..f6). */
+const FACE_TURN: Record<number, [number, number]> = { 1: [0, 0], 2: [0, -90], 3: [-90, 0], 4: [90, 0], 5: [0, 90], 6: [0, 180] };
+
 function Die({ n }: { n: number }) {
+  const [fx, fy] = FACE_TURN[n] ?? [0, 0];
   return (
-    <span className="die" aria-label={String(n)}>
-      {Array.from({ length: 9 }, (_, i) => (
-        <i key={i} className={PIPS[n]?.includes(i) ? 'on' : ''} />
+    <span className="die3d" style={{ ['--fx' as string]: `${fx}deg`, ['--fy' as string]: `${fy}deg` }} aria-hidden>
+      {[1, 2, 3, 4, 5, 6].map((f) => (
+        <span key={f} className={`face f${f}`}>
+          {Array.from({ length: 9 }, (_, i) => (
+            <i key={i} className={PIPS[f].includes(i) ? 'on' : ''} />
+          ))}
+        </span>
       ))}
     </span>
   );
 }
 
 export function Dice({ dice }: { dice: [number, number] | null }) {
+  const t = useT();
   const tick = useStore((s) => s.diceTick);
   if (!dice) return <span className="dice dice-empty" />;
+  const sum = dice[0] + dice[1];
   return (
-    <span className="dice" key={tick}>
+    <span className="dice" key={tick} role="img" aria-label={t('dice.aria', { a: dice[0], b: dice[1], sum })}>
       <Die n={dice[0]} />
       <Die n={dice[1]} />
-      <b className={dice[0] + dice[1] === 7 ? 'seven' : ''}>{dice[0] + dice[1]}</b>
+      <b className={`dice-sum${sum === 7 ? ' seven' : ''}`} aria-hidden>
+        {sum}
+      </b>
     </span>
   );
 }
@@ -85,7 +98,11 @@ function TradePanel({ view, me }: { view: PlayerView; me: PublicPlayer }) {
       <div className="trade-panel">
         <div className="trade-sum">
           <b>{t('trade.yourOffer')}</b>
-          <BagView bag={offer.give} /> <span className="arrow">→</span> <BagView bag={offer.want} />
+          <BagView bag={offer.give} />
+          <span className="swap-ico" role="img" aria-label={t('trade.for')}>
+            <Ico name="trade" size={16} />
+          </span>
+          <BagView bag={offer.want} />
           <button className="btn small ghost" onClick={() => act({ type: 'cancelTrade' })}>
             {t('trade.cancel')}
           </button>
@@ -145,25 +162,52 @@ function TradePanel({ view, me }: { view: PlayerView; me: PublicPlayer }) {
   );
 }
 
+/** One illustrated resource card; glows briefly whenever its count goes up. */
+function ResCard({ res, n, label }: { res: Resource; n: number; label: string }) {
+  const prev = useRef(n);
+  const [gain, setGain] = useState(0);
+  useEffect(() => {
+    if (n > prev.current) setGain((g) => g + 1);
+    prev.current = n;
+  }, [n]);
+  return (
+    <div className={`rcard${n > 0 ? '' : ' zero'}${gain ? ' bump' : ''}`} style={{ ['--rc' as string]: `var(--res-${res})` }} role="listitem" aria-label={`${label}: ${n}`}>
+      {gain > 0 && <span key={gain} className="gain" aria-hidden />}
+      <span className="rcard-count" aria-hidden key={`c${gain}`}>
+        {n}
+      </span>
+      <ResEmblem res={res} />
+      <span className="rcard-name" aria-hidden>
+        {label}
+      </span>
+    </div>
+  );
+}
+
 function Hand({ me, open }: { me: PublicPlayer; open: (d: DialogName) => void }) {
+  const t = useT();
   const names = useNames();
   const bag = me.resources;
   const over = me.resourceCount > HAND_LIMIT;
   return (
-    <div className="hand">
+    <div className="hand" role="list" aria-label={t('pl.resources')}>
       {RESOURCES.map((r) => (
-        <div key={r} className={`hand-chip${bag && bag[r] > 0 ? '' : ' zero'}`}>
-          <ResIcon res={r} size={30} />
-          <b>{bag ? bag[r] : 0}</b>
-          <small>{names.res(r)}</small>
-        </div>
+        <ResCard key={r} res={r} n={bag ? bag[r] : 0} label={names.res(r)} />
       ))}
-      <button className={`hand-chip cards-chip${over ? ' over' : ''}`} onClick={() => open('cards')}>
-        <span className="card-glyph">
+      <button
+        className={`rcard decree${over ? ' over' : ''}`}
+        onClick={() => open('cards')}
+        aria-label={`${t('cards.title', { decree: names.decree })}: ${me.cardCount}`}
+      >
+        <span className="rcard-count" aria-hidden>
+          {me.cardCount}
+        </span>
+        <span className="seal" aria-hidden>
           <Ico name="scroll" size={20} />
         </span>
-        <b>{me.cardCount}</b>
-        <small>{names.decree}</small>
+        <span className="rcard-name" aria-hidden>
+          {names.decree}
+        </span>
       </button>
     </div>
   );
@@ -186,16 +230,18 @@ export function Dock({ view, me, paused, open }: { view: PlayerView; me: PublicP
   };
 
   return (
-    <section className={`dock${status.mine ? ' mine' : ''}`}>
-      <div className="band" />
-      <div className="status">
+    <section className={`dock${status.mine ? ' mine' : ''}`} aria-label={t('game.dock')}>
+      <div className="status" aria-live="polite">
         {view.phase !== 'finished' &&
           (status.mine ? (
-            <span className="turn-badge mine">{t('game.yourTurn')}</span>
+            <span className="turn-ribbon mine">
+              <Star8 size={16} />
+              {t('game.yourTurn')}
+            </span>
           ) : (
-            <span className="turn-badge" style={{ ['--pc' as string]: cur?.color ?? 'var(--muted)' }}>
+            <span className="turn-ribbon" style={{ ['--pc' as string]: cur?.color ?? 'var(--muted)' }}>
               <i className="pl-dot" />
-              {cur?.name}
+              <span>{cur?.name}</span>
             </span>
           ))}
         <span className="status-text">{status.text}</span>
@@ -208,7 +254,7 @@ export function Dock({ view, me, paused, open }: { view: PlayerView; me: PublicP
       <div className="actions">
         {myRoll && (
           <button className="btn primary big grow" onClick={() => act({ type: 'roll' })}>
-            {t('act.roll')}
+            <Ico name="dice" size={22} /> {t('act.roll')}
           </button>
         )}
         {myActions && mode && (
@@ -219,24 +265,24 @@ export function Dock({ view, me, paused, open }: { view: PlayerView; me: PublicP
         {myActions && !mode && (
           <>
             <button className="btn" onClick={() => open('build')}>
-              {t('act.build')}
+              <Ico name="build" /> {t('act.build')}
             </button>
             <button className="btn" onClick={() => open('bank')}>
-              {t('act.bank')}
+              <Ico name="bank" /> {t('act.bank')}
             </button>
             <button className="btn" onClick={() => open('trade')}>
-              {t('act.trade')}
+              <Ico name="trade" /> {t('act.trade')}
             </button>
             <button className="btn primary" onClick={endTurn}>
-              {t('act.end')}
+              <Ico name="end" /> {t('act.end')}
             </button>
           </>
         )}
         {!myRoll && !myActions && (
           <span className="actions-idle">
-            {view.phase === 'setup' ? t('game.setup') : t('game.turn', { n: view.turn })}
-            {' · '}
-            {t('game.target', { n: view.config.targetPoints })}
+            <span>{view.phase === 'setup' ? t('game.setup') : t('game.turn', { n: view.turn })}</span>
+            <Star8 size={10} />
+            <span>{t('game.target', { n: view.config.targetPoints })}</span>
           </span>
         )}
         {status.mine && view.phase === 'main' && (view.freeRoads > 0 || view.bargainActive) && (

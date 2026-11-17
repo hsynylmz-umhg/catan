@@ -24,3 +24,19 @@
   - Duraklatma → sayfa yenileme (koltuk geri geldi, duraklatma ekranı) → **sunucuyu kapatıp yeniden başlatma** → "Oyunlarım"da "Duraklatıldı" → devam; durum, günlük ve sohbet korunmuş.
   - 6 oyunculu büyük harita (37 karo, hedef 11), Uzay teması, geniş ekran yan paneli, 3D.
 - Test edilmeyenler: gerçek telefonda dokunmatik, PWA kurulumu (HTTPS gerekir), oyunun sonuna kadar tarayıcıdan oynanması (motor testlerinde 2–6 oyunculu tam oyunlar var), Docker imajının derlenmesi (bu makinede Docker yok).
+
+## 2026-11-18 — Görsel tasarım v2
+- Kullanıcı ilk tasarımı yeterince etkileyici bulmadı. v1, krem zemin + kiremit vurgu + düz prizmalar ile şablon görünümündeydi.
+- Yeni yön `docs/DESIGN.md`'de: "Gece kervansarayı" (lapis lake paneller, varak altın, İznik turkuazı/mercanı, Alegreya + Alegreya Sans, Selçuklu yıldızı deseni).
+- Agent düzeni: 3D tahtayı orkestratör, 2D arayüzün tamamını (ana ekran, lobi, HUD, diyaloglar, 2D tahta, ikonlar, temalar) UI tasarım agenti yaptı.
+- **3D tahta** (`board/Scene3D.tsx`, `decor3d.ts`, `look3d.ts`) — canlı diorama:
+  - Kumsal ve koylarıyla bir ada, kıyıda köpük, shader ile deniz ve gökyüzü.
+  - Araziye göre süsler: çam/servi, rüzgârda sallanan başaklar, koyunlar, kesme taş, karlı dağ + maden ağzı, yıkık kemer. Temaya göre palmiye ve kristal.
+  - Altın çerçeveli madalyon sayı pulları; çadır, kale ve bedesten parçaları kurulunca düşüp yerine oturuyor.
+  - Pelerinli eşkıya, parlayan seçim halkaları, açılışta kamera süzülmesi.
+- **Ana ekran:** arkada yavaşça dönen canlı ada (`board/Showcase.tsx`). WebGL yoksa boyalı gradyana düşer.
+- Bulutlar kaldırıldı: kamera açısında kaya yığını gibi görünüyorlardı.
+- Doğrulama: typecheck temiz, 87/87 test, build başarılı.
+  - Tarayıcıda gerçek sunucu + 2 botla telefon (375×812) ve masaüstü (1440×900) boyutlarında denendi: ana ekran, lobi, kurulum, zar.
+  - Üç temanın 3D görünümü ve 2D tahta da kontrol edildi.
+- Not: PWA `autoUpdate` olduğundan bir güncellemeden sonra ilk açılış eski sürümü gösterebilir; ikinci açılışta yenisi gelir.

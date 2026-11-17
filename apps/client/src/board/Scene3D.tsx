@@ -409,37 +409,6 @@ function Stars() {
   );
 }
 
-function Clouds({ color, radius }: { color: string; radius: number }) {
-  const ref = useRef<THREE.Group>(null);
-  const puffs = useMemo(() => {
-    const r = rng(5);
-    return Array.from({ length: 7 }, (_, i) => {
-      const a = (i / 7) * Math.PI * 2 + r();
-      const d = radius + 1.5 + r() * 5;
-      return { x: Math.cos(a) * d, z: Math.sin(a) * d, y: 2.4 + r() * 1.8, s: 0.6 + r() * 0.7, n: 3 + Math.floor(r() * 3), seed: i };
-    });
-  }, [radius]);
-  useFrame(() => {
-    if (ref.current) ref.current.rotation.y = TIME.value * 0.008;
-  });
-  return (
-    <group ref={ref}>
-      {puffs.map((p, i) => {
-        const r = rng(p.seed + 40);
-        return (
-          <group key={i} position={[p.x, p.y, p.z]} scale={p.s}>
-            {Array.from({ length: p.n }, (_, k) => (
-              <mesh key={k} position={[(k - p.n / 2) * 0.55, r() * 0.2, (r() - 0.5) * 0.4]} scale={[0.6 + r() * 0.4, 0.45 + r() * 0.2, 0.55]}>
-                <icosahedronGeometry args={[1, 1]} />
-                <meshStandardMaterial color={color} flatShading roughness={1} transparent opacity={0.88} />
-              </mesh>
-            ))}
-          </group>
-        );
-      })}
-    </group>
-  );
-}
 
 // ---------------------------------------------------------------- medallions
 const medCache = new Map<string, THREE.CanvasTexture>();
@@ -774,7 +743,7 @@ function GameRig({ extent }: { extent: number }) {
   useEffect(() => {
     const aspect = size.height > 0 ? size.width / size.height : 1;
     const tanV = Math.tan((camera.fov * Math.PI) / 360);
-    const d = Math.max(extent / (tanV * aspect), (extent * 0.8) / tanV) * 1.2;
+    const d = Math.max(extent / (tanV * aspect), (extent * 0.8) / tanV) * (aspect < 1 ? 1.04 : 1.2);
     const to = new THREE.Spherical(d, (36 * Math.PI) / 180, 0);
     if (intro.current === null && !reducedMotion()) {
       intro.current = { t0: null, from: new THREE.Spherical(d * 1.9, (8 * Math.PI) / 180, -1.25), to };
@@ -814,13 +783,18 @@ function GameRig({ extent }: { extent: number }) {
 function ShowcaseRig({ extent }: { extent: number }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const size = useThree((s) => s.size);
+  const sph = useMemo(() => new THREE.Spherical(), []);
+  const tgt = useMemo(() => new THREE.Vector3(), []);
   useFrame(({ clock }) => {
-    const portrait = size.width < size.height;
+    const portrait = size.width < size.height * 1.05;
     const t = reducedMotion() ? 0.6 : clock.elapsedTime * 0.045 + 0.6;
-    const d = extent * (portrait ? 3.3 : 1.8);
-    const s = new THREE.Spherical(d, (58 * Math.PI) / 180, t);
-    camera.position.setFromSpherical(s);
-    camera.lookAt(0, portrait ? -extent * 0.35 : -extent * 0.05, 0);
+    // Phones: island fills the screen behind the title. Wide screens: island sits right of the text column.
+    const d = extent * (portrait ? 3.3 : 2.75);
+    sph.set(d, ((portrait ? 58 : 55) * Math.PI) / 180, t);
+    const shift = portrait ? 0 : extent * 0.62; // move the look-at point to the camera's left
+    tgt.set(-Math.cos(t) * shift, portrait ? -extent * 0.35 : -extent * 0.12, Math.sin(t) * shift);
+    camera.position.setFromSpherical(sph).add(tgt);
+    camera.lookAt(tgt);
   });
   return null;
 }
@@ -877,7 +851,6 @@ export function Scene({ view, theme, highlights, onPick, lastBuilt, mode }: Scen
       <Sky L={L} />
       {L.stars && <Stars />}
       {L.sea && <Sea L={L} apo={apo} />}
-      {L.clouds && <Clouds color={L.clouds} radius={extent} />}
       <hemisphereLight args={[L.fill.sky, L.fill.ground, L.fill.intensity]} />
       <directionalLight
         position={sun}

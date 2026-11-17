@@ -7,12 +7,13 @@ import { fileURLToPath } from 'node:url';
 const out = (name) => fileURLToPath(new URL(`../public/${name}`, import.meta.url));
 fs.mkdirSync(fileURLToPath(new URL('../public/', import.meta.url)), { recursive: true });
 
+// "Night caravanserai" palette (docs/DESIGN.md): night lapis, lapis, İznik turquoise, gold leaf, ivory.
 const C = {
-  bg: [168, 67, 42],
-  bg2: [143, 52, 32],
-  cream: [244, 228, 193],
-  teal: [29, 120, 116],
-  gold: [214, 162, 52],
+  bg: [15, 29, 51],
+  bg2: [24, 48, 79],
+  cream: [241, 230, 207],
+  teal: [47, 163, 154],
+  gold: [224, 179, 84],
 };
 const S3 = Math.sqrt(3);
 const inHex = (x, y, R) => Math.abs(x) <= (R * S3) / 2 && Math.abs(y) + Math.abs(x) / S3 <= R;
@@ -20,14 +21,14 @@ const inStar = (x, y, a) => (Math.abs(x) <= a && Math.abs(y) <= a) || Math.abs(x
 
 // Colour at normalised coords (-1..1).
 function shade(x, y) {
-  if (inStar(x, y, 0.085)) return C.bg;
-  if (inStar(x, y, 0.21)) return C.gold;
+  if (inStar(x, y, 0.09)) return C.bg;
+  if (inStar(x, y, 0.24)) return C.gold;
   if (inHex(x, y, 0.5)) return C.teal;
-  if (inHex(x, y, 0.62)) return C.cream;
-  // kilim-like diamond border band on the background
-  const d = Math.abs(x) + Math.abs(y);
-  if (d > 1.18 && d < 1.26) return C.gold;
-  return d > 1.26 ? C.bg2 : C.bg;
+  if (inHex(x, y, 0.56)) return C.bg;
+  if (inHex(x, y, 0.62)) return C.gold;
+  // a faint ring of lapis lacquer behind the medallion
+  const r = Math.hypot(x, y);
+  return r < 0.8 ? C.bg2 : C.bg;
 }
 
 function render(size) {
@@ -96,11 +97,13 @@ const starPts = (a) => {
 };
 const rgb = (c) => `rgb(${c.join(',')})`;
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" fill="${rgb(C.bg)}"/>
-  <polygon points="${hexPts(0.62)}" fill="${rgb(C.cream)}"/>
+  <rect width="100" height="100" rx="22" fill="${rgb(C.bg)}"/>
+  <circle cx="50" cy="50" r="40" fill="${rgb(C.bg2)}"/>
+  <polygon points="${hexPts(0.62)}" fill="${rgb(C.gold)}"/>
+  <polygon points="${hexPts(0.56)}" fill="${rgb(C.bg)}"/>
   <polygon points="${hexPts(0.5)}" fill="${rgb(C.teal)}"/>
-  <polygon points="${starPts(0.21)}" fill="${rgb(C.gold)}"/>
-  <polygon points="${starPts(0.085)}" fill="${rgb(C.bg)}"/>
+  <polygon points="${starPts(0.24)}" fill="${rgb(C.gold)}"/>
+  <polygon points="${starPts(0.09)}" fill="${rgb(C.bg)}"/>
 </svg>
 `;
 

@@ -14,8 +14,8 @@ const tr = {
   'home.name': 'Adın',
   'home.namePh': 'Oyuncu adı',
   'home.create': 'Oda kur',
-  'home.join': 'Kodla katıl',
-  'home.codePh': 'ODA KODU',
+  'home.join': 'Katıl',
+  'home.codePh': 'Oda kodu',
   'home.needName': 'Önce bir ad yaz.',
   'home.needCode': '5 haneli oda kodunu yaz.',
   'home.myGames': 'Oyunlarım',
@@ -38,7 +38,7 @@ const tr = {
   'status.finished': 'Bitti',
 
   'lobby.title': 'Oda',
-  'lobby.copy': 'Davet bağlantısını kopyala',
+  'lobby.copy': 'Bağlantıyı kopyala',
   'lobby.share': 'Paylaş',
   'lobby.copied': 'Bağlantı kopyalandı.',
   'lobby.shareText': 'Kervan Yolu odama katıl! Kod: {code}',
@@ -59,7 +59,7 @@ const tr = {
 
   'conn.reconnecting': 'Bağlantı koptu, yeniden bağlanılıyor…',
 
-  'game.yourTurn': 'SIRA SENDE',
+  'game.yourTurn': 'Sıra sende',
   'game.turnOf': 'Sıra: {name}',
   'game.turn': 'Tur {n}',
   'game.setup': 'Kurulum',
@@ -227,7 +227,7 @@ const tr = {
   'ev.discarded': '{name} {n} kaynak attı',
   'ev.bonusTaken': '{bonus} artık {name} oyuncusunda (+2)',
   'ev.bonusLost': '{bonus} sahipsiz kaldı',
-  'ev.turnStarted': '— Tur {n}: {name} —',
+  'ev.turnStarted': 'Tur {n}: {name}',
   'ev.gameWon': '{name} {n} puanla oyunu kazandı!',
 
   'err.roomNotFound': 'Oda bulunamadı.',
@@ -261,9 +261,20 @@ const tr = {
   'replaced.text': 'Bu oyun koltuğu başka bir sekmede ya da cihazda açıldı. Burada sürdürmek istersen geri al.',
   'replaced.take': 'Burada devam et',
   'lobby.you': 'Sen',
-  'lobby.free': 'boş',
+  'lobby.free': 'Boş koltuk',
   'err.unknown': 'Bir hata oluştu ({code}).',
   'err.network': 'Bağlantı hatası.',
+  'panel.title': 'Günlük ve sohbet',
+  'pl.pointsHidden': 'Puan (rakipler {n} görüyor)',
+  'bank.summary': '{n} {give} ver, 1 {want} al',
+  'bank.have': 'elinde {n}',
+  'trade.for': 'karşılığında',
+  'dice.aria': 'Zar: {a} ve {b}, toplam {sum}',
+  'lobby.hostOnlyShort': 'Kurucu seçer',
+  'lobby.colorN': 'Renk {n}',
+  'lobby.codeHint': 'Bu kodu arkadaşlarına oku',
+  'game.dock': 'Elin ve eylemler',
+  'home.or': 'ya da koda katıl',
 };
 
 export type Key = keyof typeof tr;
@@ -282,8 +293,8 @@ const en: Record<Key, string> = {
   'home.name': 'Your name',
   'home.namePh': 'Player name',
   'home.create': 'Create room',
-  'home.join': 'Join with code',
-  'home.codePh': 'ROOM CODE',
+  'home.join': 'Join',
+  'home.codePh': 'Room code',
   'home.needName': 'Enter a name first.',
   'home.needCode': 'Enter the 5-character room code.',
   'home.myGames': 'My games',
@@ -306,7 +317,7 @@ const en: Record<Key, string> = {
   'status.finished': 'Finished',
 
   'lobby.title': 'Room',
-  'lobby.copy': 'Copy invite link',
+  'lobby.copy': 'Copy link',
   'lobby.share': 'Share',
   'lobby.copied': 'Link copied.',
   'lobby.shareText': 'Join my Kervan Yolu room! Code: {code}',
@@ -327,7 +338,7 @@ const en: Record<Key, string> = {
 
   'conn.reconnecting': 'Connection lost, reconnecting…',
 
-  'game.yourTurn': 'YOUR TURN',
+  'game.yourTurn': 'Your turn',
   'game.turnOf': 'Turn: {name}',
   'game.turn': 'Turn {n}',
   'game.setup': 'Setup',
@@ -495,7 +506,7 @@ const en: Record<Key, string> = {
   'ev.discarded': '{name} discarded {n} resources',
   'ev.bonusTaken': '{name} now holds {bonus} (+2)',
   'ev.bonusLost': '{bonus} is now unclaimed',
-  'ev.turnStarted': '— Turn {n}: {name} —',
+  'ev.turnStarted': 'Turn {n}: {name}',
   'ev.gameWon': '{name} won the game with {n} points!',
 
   'err.roomNotFound': 'Room not found.',
@@ -529,9 +540,20 @@ const en: Record<Key, string> = {
   'replaced.text': 'This seat was opened in another tab or device. Take it back to continue here.',
   'replaced.take': 'Continue here',
   'lobby.you': 'You',
-  'lobby.free': 'free',
+  'lobby.free': 'Open seat',
   'err.unknown': 'Something went wrong ({code}).',
   'err.network': 'Connection error.',
+  'panel.title': 'Log and chat',
+  'pl.pointsHidden': 'Points (rivals see {n})',
+  'bank.summary': 'Give {n} {give}, get 1 {want}',
+  'bank.have': '{n} in hand',
+  'trade.for': 'in exchange for',
+  'dice.aria': 'Dice: {a} and {b}, total {sum}',
+  'lobby.hostOnlyShort': 'Host decides',
+  'lobby.colorN': 'Colour {n}',
+  'lobby.codeHint': 'Read this code out to your friends',
+  'game.dock': 'Your hand and actions',
+  'home.or': 'or join with a code',
 };
 
 const DICT: Record<Lang, Record<Key, string>> = { tr, en };

@@ -29,13 +29,13 @@ export function SidePanel() {
   return (
     <>
       {panelOpen && <div className="side-backdrop" onClick={() => setPanel(false)} />}
-      <aside className={`side${panelOpen ? ' open' : ''}`}>
-        <div className="tabs">
-          <button className={panelTab === 'log' ? 'on' : ''} onClick={() => setPanel(panelOpen, 'log')}>
+      <aside className={`side${panelOpen ? ' open' : ''}`} aria-label={t('panel.title')}>
+        <div className="tabs strip">
+          <button aria-pressed={panelTab === 'log'} className={panelTab === 'log' ? 'on' : ''} onClick={() => setPanel(panelOpen, 'log')}>
             {t('panel.log')}
             {unreadLog > 0 && panelTab !== 'log' && <span className="dot" />}
           </button>
-          <button className={panelTab === 'chat' ? 'on' : ''} onClick={() => setPanel(panelOpen, 'chat')}>
+          <button aria-pressed={panelTab === 'chat'} className={panelTab === 'chat' ? 'on' : ''} onClick={() => setPanel(panelOpen, 'chat')}>
             {t('panel.chat')}
             {unreadChat > 0 && <span className="badge-n">{unreadChat}</span>}
           </button>

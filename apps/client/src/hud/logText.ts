@@ -24,7 +24,7 @@ export function eventLine(
         .map(([seat, bag]) => ({ seat: Number(seat), txt: bagText(bag, names) }))
         .filter((p) => p.txt)
         .map((p) => `${nameOf(p.seat)}: ${p.txt}`);
-      return { seat: null, text: parts.length ? t('ev.produced', { list: parts.join(' · ') }) : t('ev.producedNone') };
+      return { seat: null, text: parts.length ? t('ev.produced', { list: parts.join('; ') }) : t('ev.producedNone') };
     }
     case 'tribute':
       return { seat: ev.seat, text: t('ev.tribute', { name: nameOf(ev.seat), list: ev.resources.map((r) => names.res(r)).join(', ') }) };

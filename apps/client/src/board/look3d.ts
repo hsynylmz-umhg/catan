@@ -23,7 +23,6 @@ export interface Look3D {
   exposure: number;
   medallion: { face: string; rim: string; ink: string; hot: string };
   glow: string; // placement rings
-  clouds: string | null;
   // decoration colours
   c: {
     leaf: string;
@@ -65,7 +64,6 @@ export const LOOKS: Record<ThemeId, Look3D> = {
     exposure: 1.0,
     medallion: { face: '#f3e8d0', rim: '#d9a944', ink: '#2a2014', hot: '#c8412f' },
     glow: '#ffd36b',
-    clouds: '#ffe2c4',
     c: {
       leaf: '#2f5a2c',
       leaf2: '#3f6e33',
@@ -104,7 +102,6 @@ export const LOOKS: Record<ThemeId, Look3D> = {
     exposure: 1.0,
     medallion: { face: '#ffffff', rim: '#1fa3a3', ink: '#123a44', hot: '#e5546a' },
     glow: '#ffffff',
-    clouds: '#ffffff',
     c: {
       leaf: '#2e8a4a',
       leaf2: '#4fb35c',
@@ -143,7 +140,6 @@ export const LOOKS: Record<ThemeId, Look3D> = {
     exposure: 1.05,
     medallion: { face: '#141a36', rim: '#46e0d8', ink: '#e8ecff', hot: '#ffb347' },
     glow: '#46e0d8',
-    clouds: null,
     c: {
       leaf: '#46e0d8',
       leaf2: '#8ff0e0',

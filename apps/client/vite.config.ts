@@ -24,8 +24,8 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'any',
-        background_color: '#f3e6cc',
-        theme_color: '#a8432a',
+        background_color: '#0f1d33',
+        theme_color: '#0f1d33',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
@@ -34,7 +34,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+        // Fonts: only the latin + latin-ext subsets are ever used (Turkish fits in them).
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}', '**/*-latin-*.woff2'],
         navigateFallback: 'index.html',
         // The API and the game socket must always hit the network.
         navigateFallbackDenylist: [/^\/api\//, /^\/ws/],

@@ -12,10 +12,12 @@ function ReplacedOverlay() {
   const t = useT();
   const { takeBack, leaveHome } = useStore();
   return (
-    <div className="overlay">
-      <div className="overlay-card">
-        <div className="band" />
-        <h2>{t('replaced.title')}</h2>
+    <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="replaced-title">
+      <div className="overlay-card lacquer pattern">
+        <span className="emblem" aria-hidden>
+          <Ico name="link" size={30} />
+        </span>
+        <h2 id="replaced-title">{t('replaced.title')}</h2>
         <p>{t('replaced.text')}</p>
         <button className="btn primary big" onClick={takeBack}>
           {t('replaced.take')}

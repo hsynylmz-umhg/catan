@@ -39,5 +39,6 @@ Tek port (3000) hem oyunu hem WebSocket'i sunar. Buluta yayın için: [docs/DEPL
 | `npm test` | Tüm testler (motor + sunucu) |
 | `npm run typecheck` | TypeScript denetimi |
 | `npm run build` | İstemci + sunucu derlemesi |
+| `npx tsx scripts/bot.ts KOD [ad] [ws-url]` | Odaya test botu sokar (tek başına denemek için) |
 
 Gereksinim: Node.js 22.13+ (yerleşik SQLite için).

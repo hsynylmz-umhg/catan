@@ -13,3 +13,14 @@
 - **Sunucu agenti bitti:** `apps/server/src/` (index, app, ws, rooms, db). 20 test (gerçek motorla WebSocket e2e dahil).
   - Ek hata kodları: `rateLimited`, `internal`. Koltuk başka sekmeden devralınınca eski soket 4000 koduyla kapanır.
 - Orkestratör doğrulaması: 87/87 test geçti, shared + server tip denetimi temiz.
+
+## 2026-11-17
+- İstemci agenti API kullanım limitine takılıp yarıda kaldı; kaldığı yerden sürdürüldü ve tamamlandı (ana ekran, lobi, oyun, 3D/2D tahta, HUD, temalar, TR/EN, PWA).
+- Birleştirme: `npm run typecheck` temiz, `npm test` 87/87, `npm run build` başarılı. `typecheck` betiği düzeltildi (`tsc -b` yerine sırayla `tsc -p`).
+- `scripts/bot.ts` eklendi: odaya katılıp basit yasal hamleler oynayan test botu.
+- **Tarayıcıda uçtan uca test (derlenmiş tek servis, gerçek sunucu + motor):**
+  - Oda kurma → bot katılımı → başlatma; 3D tahtada kurulum (yılan sırası, ikinci obadan başlangıç kaynağı).
+  - Zar, oyuncular arası takas (teklif → bot kabul → onay), oyun günlüğü, sohbet, 2D/3D geçişi.
+  - Duraklatma → sayfa yenileme (koltuk geri geldi, duraklatma ekranı) → **sunucuyu kapatıp yeniden başlatma** → "Oyunlarım"da "Duraklatıldı" → devam; durum, günlük ve sohbet korunmuş.
+  - 6 oyunculu büyük harita (37 karo, hedef 11), Uzay teması, geniş ekran yan paneli, 3D.
+- Test edilmeyenler: gerçek telefonda dokunmatik, PWA kurulumu (HTTPS gerekir), oyunun sonuna kadar tarayıcıdan oynanması (motor testlerinde 2–6 oyunculu tam oyunlar var), Docker imajının derlenmesi (bu makinede Docker yok).

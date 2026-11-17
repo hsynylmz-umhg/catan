@@ -9,7 +9,7 @@
     "build": "npm run build -w @kervan/client && npm run build -w @kervan/server",
     "start": "npm run start -w @kervan/server",
     "test": "vitest run",
-    "typecheck": "tsc -b packages/shared apps/server apps/client"
+    "typecheck": "tsc -p packages/shared && tsc -p apps/server && tsc -p apps/client"
   },
   "devDependencies": {
     "concurrently": "^9.0.0",

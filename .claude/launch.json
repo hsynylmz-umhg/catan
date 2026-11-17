@@ -1,6 +1,7 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "kervan-prod", "runtimeExecutable": "node", "runtimeArgs": ["apps/server/dist/server.mjs"], "port": 3000 }
+    { "name": "kervan-prod", "runtimeExecutable": "node", "runtimeArgs": ["apps/server/dist/server.mjs"], "port": 3000 },
+    { "name": "client-3d", "runtimeExecutable": "npx", "runtimeArgs": ["vite", "apps/client", "--port", "5188", "--strictPort"], "port": 5188 }
   ]
 }

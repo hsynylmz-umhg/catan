@@ -682,9 +682,11 @@ function Bandit({ target, L }: { target: [number, number, number]; L: Look3D }) 
 
 // ---------------------------------------------------------------- highlights
 const HL = {
-  ring: new THREE.TorusGeometry(0.17, 0.022, 8, 32),
+  ring: new THREE.TorusGeometry(0.17, 0.03, 8, 32),
+  ringBack: new THREE.TorusGeometry(0.17, 0.055, 8, 32),
   disc: new THREE.CircleGeometry(0.15, 32),
-  bar: new THREE.CapsuleGeometry(0.04, 0.4, 4, 10),
+  bar: new THREE.CapsuleGeometry(0.052, 0.38, 4, 10),
+  barBack: new THREE.CapsuleGeometry(0.085, 0.4, 4, 10),
   hexRing: new THREE.RingGeometry(0.74, 0.84, 6, 1, Math.PI / 6),
   vHit: new THREE.SphereGeometry(0.36, 8, 6),
   eHit: new THREE.BoxGeometry(0.7, 0.4, 0.4),
@@ -703,11 +705,12 @@ function Highlight({ highlights, board, L, vTop, eTop, onPick }: {
   const mats = useMemo(() => {
     const glow = new THREE.MeshBasicMaterial({ color: L.glow, transparent: true, opacity: 0.9, depthWrite: false, toneMapped: false });
     const soft = new THREE.MeshBasicMaterial({ color: L.glow, transparent: true, opacity: 0.25, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
-    return { glow, soft };
+    const back = new THREE.MeshBasicMaterial({ color: '#0b1426', transparent: true, opacity: 0.6, depthWrite: false });
+    return { glow, soft, back };
   }, [L]);
   useFrame(() => {
     const s = 0.5 + 0.5 * Math.sin(TIME.value * 4);
-    mats.glow.opacity = 0.6 + 0.4 * s;
+    mats.glow.opacity = 0.75 + 0.25 * s;
     mats.soft.opacity = 0.15 + 0.25 * s;
   });
   const click = (kind: PickKind, id: number) => (e: ThreeEvent<MouseEvent>) => {
@@ -728,7 +731,8 @@ function Highlight({ highlights, board, L, vTop, eTop, onPick }: {
         const y = vTop(id) + 0.03;
         return (
           <group key={`v${id}`} position={[v.x, y, v.y]} onClick={click('vertex', id)}>
-            <mesh geometry={HL.ring} material={mats.glow} rotation={[Math.PI / 2, 0, 0]} />
+            <mesh geometry={HL.ringBack} material={mats.back} rotation={[Math.PI / 2, 0, 0]} />
+            <mesh geometry={HL.ring} material={mats.glow} rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} />
             <mesh geometry={HL.disc} material={mats.soft} rotation={[-Math.PI / 2, 0, 0]} />
             <mesh geometry={HL.vHit} material={HIT_MAT} />
           </group>
@@ -738,8 +742,9 @@ function Highlight({ highlights, board, L, vTop, eTop, onPick }: {
         if (!board.edges[id]) return null;
         const p = edgePose(id);
         return (
-          <group key={`e${id}`} position={[p.x, eTop(id) + 0.05, p.z]} rotation={[0, p.rot, 0]} onClick={click('edge', id)}>
-            <mesh geometry={HL.bar} material={mats.glow} rotation={[0, 0, Math.PI / 2]} />
+          <group key={`e${id}`} position={[p.x, eTop(id) + 0.08, p.z]} rotation={[0, p.rot, 0]} onClick={click('edge', id)}>
+            <mesh geometry={HL.barBack} material={mats.back} rotation={[0, 0, Math.PI / 2]} scale={[1, 1, 0.45]} />
+            <mesh geometry={HL.bar} material={mats.glow} rotation={[0, 0, Math.PI / 2]} position={[0, 0.02, 0]} />
             <mesh geometry={HL.eHit} material={HIT_MAT} />
           </group>
         );

@@ -1,5 +1,5 @@
-import type { Board, Edge, Hex, MapSize, Terrain, Vertex } from '../types';
-import { type Rng, seedToState, shuffle } from './rng';
+import { HARBOR_COUNTS, RESOURCES, type Board, type Edge, type Harbor, type Hex, type MapSize, type Resource, type Terrain, type Vertex } from '../types';
+import { type Rng, nextInt, seedToState, shuffle } from './rng';
 
 const SQ3 = Math.sqrt(3);
 
@@ -112,5 +112,50 @@ export function generateBoard(size: MapSize, seed: number): Board {
     if (!clash) break;
   }
 
+  board.harbors = placeHarbors(board, seed);
   return board;
+}
+
+/** Edges that border exactly one hex, in order around the coast (clockwise from the top). */
+export function coastalEdges(board: Board): number[] {
+  const out: { id: number; ang: number }[] = [];
+  for (const e of board.edges) {
+    const A = board.vertices[e.a]!;
+    const B = board.vertices[e.b]!;
+    const shared = A.hexes.filter((h) => B.hexes.includes(h));
+    if (shared.length !== 1) continue;
+    out.push({ id: e.id, ang: Math.atan2((A.x + B.x) / 2, -(A.y + B.y) / 2) });
+  }
+  out.sort((p, q) => p.ang - q.ang);
+  return out.map((p) => p.id);
+}
+
+/**
+ * Spread harbours evenly around the coast with a random start and small random shifts.
+ * Two harbours never share a corner. Uses its own PRNG stream so terrain and numbers are unchanged.
+ */
+export function placeHarbors(board: Board, seed: number): Harbor[] {
+  const rng: Rng = { s: seedToState(seed ^ 0x5bd1e995) };
+  const coast = coastalEdges(board);
+  const counts = HARBOR_COUNTS[board.size];
+  const n = counts.any + counts.specific;
+  const m = coast.length;
+  const step = m / n;
+  const start = nextInt(rng, m);
+  const pos = Array.from({ length: n }, (_, k) => Math.round(start + k * step) % m);
+  // jitter each by -1/0/+1 while keeping at least one free edge between neighbours (no shared corner)
+  const gap = (a: number, b: number) => (((b - a) % m) + m) % m;
+  for (let k = 0; k < n; k++) {
+    const d = nextInt(rng, 3) - 1;
+    const cand = (pos[k]! + d + m) % m;
+    const prev = pos[(k - 1 + n) % n]!;
+    const next = pos[(k + 1) % n]!;
+    if (gap(prev, cand) >= 2 && gap(cand, next) >= 2) pos[k] = cand;
+  }
+  const kinds: (Resource | 'any')[] = [...RESOURCES];
+  const extra = counts.specific - RESOURCES.length;
+  for (let i = 0; i < extra; i++) kinds.push(RESOURCES[nextInt(rng, RESOURCES.length)]!);
+  for (let i = 0; i < counts.any; i++) kinds.push('any');
+  const shuffled = shuffle(rng, kinds);
+  return pos.map((p, k) => ({ edge: coast[p]!, kind: shuffled[k]! }));
 }

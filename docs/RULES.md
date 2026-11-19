@@ -14,6 +14,8 @@ ekranda görünen adlar temaya göre değişir (bkz. PLAN.md → Temalar).
   - large (34): 2×2, 3×4, 4×4, 5×4, 6×3, 8×3, 9×4, 10×4, 11×4, 12×2
   - Kısıt: 6 ve 8 taşıyan iki karo komşu olamaz (olursa yeniden karıştır; 200 denemeden sonra olduğu gibi kabul et).
 - Eşkıya başlangıçta bir barren karosundadır (en küçük id'li).
+- **Limanlar:** Kıyı kenarlarına (tek karoya komşu kenarlar) rastgele yerleşir. standard: 9 (4 × 3:1, 5 × 2:1 — her kaynaktan bir), large: 11 (5 × 3:1, 6 × 2:1 — her kaynaktan bir + bir rastgele kaynak).
+  Kıyı boyunca eşit aralıkla, rastgele bir başlangıç noktasından ve ±1 kenar oynamayla dağıtılır; iki liman köşe paylaşmaz. Aynı (size, seed) aynı limanları verir; yerleşim ayrı bir PRNG akışı kullandığı için arazi ve sayılar değişmez.
 - Köşe (vertex) ve kenar (edge) kimlikleri 0'dan başlayan sıralı tam sayılardır; aynı (size, seed) her zaman aynı tahtayı üretir.
 
 ## Parçalar ve puan
@@ -50,8 +52,8 @@ Zar atmadan önce (`step = 'roll'`) yalnızca `roll` ve `playCard` (raider dahil
 
 ## Banka takası
 `bankTrade {give, want}`: oran kadar `give` verip 1 `want` alır (`give ≠ want`). Oran (`bankRate`):
-- 2 — bargain fermanı bu tur etkinse, **veya** oyuncunun bir market'i `give` kaynağını üreten bir karoya komşuysa
-- 3 — oyuncunun en az bir market'i varsa
+- 2 — bargain fermanı bu tur etkinse, **veya** oyuncunun bir market'i `give` kaynağını üreten bir karoya komşuysa, **veya** oyuncunun binası `give` için 2:1 bir limanın köşesindeyse
+- 3 — oyuncunun en az bir market'i varsa **veya** binası 3:1 bir limanın köşesindeyse
 - 4 — aksi halde
 
 ## Oyuncular arası takas

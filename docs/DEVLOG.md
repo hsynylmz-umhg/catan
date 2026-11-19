@@ -40,3 +40,16 @@
   - Tarayıcıda gerçek sunucu + 2 botla telefon (375×812) ve masaüstü (1440×900) boyutlarında denendi: ana ekran, lobi, kurulum, zar.
   - Üç temanın 3D görünümü ve 2D tahta da kontrol edildi.
 - Not: PWA `autoUpdate` olduğundan bir güncellemeden sonra ilk açılış eski sürümü gösterebilir; ikinci açılışta yenisi gelir.
+
+## 2026-11-19 — Tanıtım klibi ve limanlar
+- `/brag` ile 23 sn tanıtım klibi (`brag-output/`, git'e eklenmedi).
+  - Gerçek uygulama başsız Chrome'da sanal saatle kare kare çekildi.
+  - Müzik ve efektler yerelde sentezlendi.
+- **Limanlar (kullanıcı isteği):** kıyı kenarlarına rastgele yerleşen ticaret noktaları.
+  - Sayılar: standard 9 (4 × 3:1, 5 × 2:1), large 11 (5 × 3:1, 6 × 2:1).
+  - Yerleşim: kıyıya eşit aralıkla yayılıyor, iki liman köşe paylaşmıyor. Ayrı bir PRNG akışı kullanıldığı için mevcut tohumlardaki arazi ve sayılar değişmedi.
+  - `bankRate` limanları hesaba katıyor: limanın iki köşesinden birinde binası olan oyuncu yararlanıyor.
+  - Sözleşmede `Board.harbors?` var. Alan isteğe bağlı; limanlardan önce kaydedilmiş oyunlar limansız devam ediyor.
+  - 3D'de denize uzanan iskele, köşelere kalaslar ve oran madalyonu; liman önündeki kumsal açık suya çevrildi. 2D'de de aynı öğeler var.
+  - 7 yeni test, toplam 94/94. Kurallar ve oyun içi özet güncellendi.
+- `npm test` artık yalnızca `packages` ve `apps` klasörlerini tarıyor; çekimden kalan Chrome profili testlere karışıyordu.

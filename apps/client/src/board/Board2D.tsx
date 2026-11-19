@@ -3,6 +3,7 @@ import type { Terrain } from '@kervan/shared';
 import { tint } from '../themes';
 import { INK, PieceShape } from '../ui/Pieces';
 import { pips, type BoardProps } from './types';
+import { useStore } from '../store';
 
 const S = 60; // layout units -> svg units (hex radius)
 
@@ -176,7 +177,7 @@ export default function Board2D({ view, theme, highlights, onPick, lastBuilt }: 
       minX = Math.min(minX, v.x); maxX = Math.max(maxX, v.x);
       minY = Math.min(minY, v.y); maxY = Math.max(maxY, v.y);
     }
-    const pad = 0.75;
+    const pad = board.harbors?.length ? 1.3 : 0.75;
     return { x: (minX - pad) * S, y: (minY - pad) * S, w: (maxX - minX + 2 * pad) * S, h: (maxY - minY + 2 * pad) * S };
   }, [board]);
   const cx = vb.x + vb.w / 2;
@@ -271,6 +272,26 @@ export default function Board2D({ view, theme, highlights, onPick, lastBuilt }: 
   };
   const colorOf = (seat: number) => view.players.find((p) => p.seat === seat)?.color ?? '#888';
   const gold = theme.ui.gold;
+  const lang = useStore((st) => st.settings.lang);
+  const harbors = useMemo(
+    () =>
+      (board.harbors ?? []).flatMap((h) => {
+        const e = board.edges[h.edge];
+        if (!e) return [];
+        const A = board.vertices[e.a];
+        const B = board.vertices[e.b];
+        const hexId = A.hexes.find((x) => B.hexes.includes(x));
+        if (hexId === undefined) return [];
+        const C = board.hexes[hexId];
+        const mx = (A.x + B.x) / 2;
+        const my = (A.y + B.y) / 2;
+        const len = Math.hypot(mx - C.x, my - C.y) || 1;
+        const ux = (mx - C.x) / len;
+        const uy = (my - C.y) / len;
+        return [{ kind: h.kind, A, B, mx, my, ux, uy }];
+      }),
+    [board],
+  );
   const space = pal.stars;
   const hot = (n: number | null) => n === 6 || n === 8;
 
@@ -401,6 +422,36 @@ export default function Board2D({ view, theme, highlights, onPick, lastBuilt }: 
                   </g>
                 </g>
               )}
+            </g>
+          );
+        })}
+
+        {/* harbours: a jetty into the sea, gangways to both corners, a rate medallion */}
+        {harbors.map((h, i) => {
+          const base = { x: (h.mx + h.ux * 0.2) * S, y: (h.my + h.uy * 0.2) * S };
+          const end = { x: (h.mx + h.ux * 0.95) * S, y: (h.my + h.uy * 0.95) * S };
+          const wood = space ? '#59607e' : '#8a5f3a';
+          const dark = space ? '#2c3049' : '#4e3420';
+          const fill = h.kind === 'any' ? pal.token : pal.resource[h.kind];
+          const ink = h.kind === 'any' ? pal.tokenInk : '#fff';
+          return (
+            <g key={`hb${i}`} strokeLinecap="round">
+              <line x1={h.A.x * S} y1={h.A.y * S} x2={base.x} y2={base.y} stroke={dark} strokeWidth="4" />
+              <line x1={h.B.x * S} y1={h.B.y * S} x2={base.x} y2={base.y} stroke={dark} strokeWidth="4" />
+              <line x1={base.x} y1={base.y} x2={end.x} y2={end.y} stroke={dark} strokeWidth="17" />
+              <line x1={base.x} y1={base.y} x2={end.x} y2={end.y} stroke={wood} strokeWidth="13" strokeLinecap="butt" strokeDasharray="5 1.4" />
+              <g transform={`translate(${end.x} ${end.y})`} filter={ref('shadow')}>
+                <circle r="19" fill={tint(gold, -0.45)} />
+                <circle r="17.5" fill={fill} stroke={gold} strokeWidth="2.6" />
+                <text y={h.kind === 'any' ? 5 : 2} textAnchor="middle" fontSize="14" fontWeight="800" fill={ink}>
+                  {h.kind === 'any' ? '3:1' : '2:1'}
+                </text>
+                {h.kind !== 'any' && (
+                  <text y="11" textAnchor="middle" fontSize="6.4" fontWeight="700" fill={ink}>
+                    {theme.res[h.kind][lang]}
+                  </text>
+                )}
+              </g>
             </g>
           );
         })}

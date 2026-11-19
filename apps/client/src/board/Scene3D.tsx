@@ -4,12 +4,12 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode }
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import type { Board, BuildingKind, Hex, PlayerView } from '@kervan/shared';
+import type { Board, BuildingKind, Hex, PlayerView, Resource } from '@kervan/shared';
 import type { ThemeDef } from '../themes';
 import { LOOKS, type Look3D } from './look3d';
 import { GLOW, SWAY, TIME, groupProps, layoutProps, propGeometry, propMaterial, rng, type PropKind } from './decor3d';
 import { pips, type Highlights, type PickKind } from './types';
-import type { LastBuilt } from '../store';
+import { useStore, type LastBuilt } from '../store';
 
 const PLATE = 0.06; // sand plate top
 const SQ3 = Math.sqrt(3);
@@ -100,6 +100,7 @@ function Island({ board, L }: { board: Board; L: Look3D }) {
     const plate: THREE.Matrix4[] = [];
     const coast: { x: number; z: number; top: number }[] = [];
     for (const h of board.hexes) plate.push(new THREE.Matrix4().makeTranslation(h.x, 0, h.y));
+    const openWater = harborSpots(board).map((h) => h.out);
     for (let q = -R - 1; q <= R + 1; q++)
       for (let s = -R - 1; s <= R + 1; s++) {
         const d = (Math.abs(q) + Math.abs(s) + Math.abs(-q - s)) / 2;
@@ -108,6 +109,7 @@ function Island({ board, L }: { board: Board; L: Look3D }) {
         const z = 1.5 * s;
         const keep = r();
         if (keep < (L.sea ? 0.28 : 0.45)) continue; // bays / broken asteroid rim
+        if (openWater.some(([ox, oz]) => Math.hypot(ox - x, oz - z) < 0.4)) continue; // harbour mouth
         coast.push({ x, z, top: L.sea ? 0.02 : -0.02 - r() * 0.25 });
       }
     const tiles = new Map<string, THREE.Matrix4[]>();
@@ -409,6 +411,138 @@ function Stars() {
   );
 }
 
+
+// ---------------------------------------------------------------- harbours
+interface HarborSpot {
+  kind: Resource | 'any';
+  a: [number, number];
+  b: [number, number];
+  mid: [number, number];
+  dir: [number, number]; // outward unit vector
+  out: [number, number]; // centre of the sea hex in front of it
+  hex: number;
+}
+function harborSpots(board: Board): HarborSpot[] {
+  return (board.harbors ?? []).flatMap((h) => {
+    const e = board.edges[h.edge];
+    if (!e) return [];
+    const A = board.vertices[e.a];
+    const B = board.vertices[e.b];
+    const hexId = A.hexes.find((x) => B.hexes.includes(x));
+    if (hexId === undefined) return [];
+    const C = board.hexes[hexId];
+    const mid: [number, number] = [(A.x + B.x) / 2, (A.y + B.y) / 2];
+    const dx = mid[0] - C.x;
+    const dz = mid[1] - C.y;
+    const len = Math.hypot(dx, dz) || 1;
+    return [{ kind: h.kind, a: [A.x, A.y], b: [B.x, B.y], mid, dir: [dx / len, dz / len], out: [C.x + 2 * dx, C.y + 2 * dz], hex: hexId }];
+  });
+}
+
+const signCache = new Map<string, THREE.CanvasTexture>();
+function harborTexture(kind: Resource | 'any', L: Look3D, color: string, label: string, fonts: boolean) {
+  const key = `${kind}|${L.medallion.face}|${color}|${label}|${fonts}`;
+  const hit = signCache.get(key);
+  if (hit) return hit;
+  const S = 256;
+  const c = document.createElement('canvas');
+  c.width = c.height = S;
+  const g = c.getContext('2d')!;
+  const m = L.medallion;
+  const font = (w: number, px: number) => `${w} ${px}px ${fonts ? 'Alegreya, ' : ''}Georgia, serif`;
+  g.beginPath();
+  g.arc(S / 2, S / 2, S / 2 - 6, 0, Math.PI * 2);
+  g.fillStyle = m.rim;
+  g.fill();
+  g.beginPath();
+  g.arc(S / 2, S / 2, S / 2 - 20, 0, Math.PI * 2);
+  g.fillStyle = kind === 'any' ? m.face : color;
+  g.fill();
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  if (kind === 'any') {
+    g.fillStyle = m.ink;
+    g.font = font(800, 92);
+    g.fillText('3:1', S / 2, S / 2 + 4);
+  } else {
+    g.fillStyle = '#ffffff';
+    g.shadowColor = 'rgba(0,0,0,.45)';
+    g.shadowBlur = 8;
+    g.font = font(800, 88);
+    g.fillText('2:1', S / 2, S / 2 - 20);
+    g.font = font(700, label.length > 9 ? 30 : 38);
+    g.fillText(label, S / 2, S / 2 + 52);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  signCache.set(key, tex);
+  return tex;
+}
+
+const HB = {
+  box: new THREE.BoxGeometry(1, 1, 1),
+  post: new THREE.CylinderGeometry(0.03, 0.035, 1, 6),
+};
+
+function Beam({ from, to, y0, y1, w, h, mat }: { from: [number, number]; to: [number, number]; y0: number; y1: number; w: number; h: number; mat: THREE.Material }) {
+  const dx = to[0] - from[0];
+  const dz = to[1] - from[1];
+  const len = Math.hypot(dx, dz);
+  const dy = y1 - y0;
+  const run = Math.hypot(len, dy);
+  return (
+    <group position={[(from[0] + to[0]) / 2, (y0 + y1) / 2, (from[1] + to[1]) / 2]} rotation={[0, -Math.atan2(dz, dx), 0]}>
+      <mesh geometry={HB.box} material={mat} rotation={[0, 0, Math.atan2(dy, len)]} scale={[run, h, w]} castShadow receiveShadow />
+    </group>
+  );
+}
+
+function Harbors({ board, L, theme, lang, vTop }: { board: Board; L: Look3D; theme: ThemeDef; lang: 'tr' | 'en'; vTop: (v: number) => number }) {
+  const fonts = useFontsReady();
+  const spots = useMemo(() => harborSpots(board), [board]);
+  const mats = useMemo(
+    () => ({
+      deck: new THREE.MeshStandardMaterial({ color: L.sea ? '#8a5f3a' : '#59607e', roughness: 0.85, flatShading: true }),
+      dark: new THREE.MeshStandardMaterial({ color: L.sea ? '#4e3420' : '#2c3049', roughness: 0.9 }),
+    }),
+    [L],
+  );
+  const deckY = L.sea ? 0.07 : 0.0;
+  return (
+    <>
+      {spots.map((h, i) => {
+        const [ux, uz] = h.dir;
+        const base: [number, number] = [h.mid[0] + ux * 0.18, h.mid[1] + uz * 0.18];
+        const end: [number, number] = [h.mid[0] + ux * 1.0, h.mid[1] + uz * 1.0];
+        const px = -uz;
+        const pz = ux;
+        const posts = [0.45, 0.95].flatMap((k) =>
+          [-1, 1].map((sgn) => [h.mid[0] + ux * k + px * 0.15 * sgn, h.mid[1] + uz * k + pz * 0.15 * sgn] as [number, number]),
+        );
+        const top = Math.max(...board.hexes.filter((x) => x.id === h.hex).map((x) => tileTop(L, x)));
+        const e = board.harbors![i]!;
+        const E = board.edges[e.edge];
+        const color = h.kind === 'any' ? L.medallion.face : theme.palette.resource[h.kind];
+        const label = h.kind === 'any' ? '' : theme.res[h.kind][lang];
+        return (
+          <group key={i}>
+            <Beam from={base} to={end} y0={deckY} y1={deckY} w={0.34} h={0.045} mat={mats.deck} />
+            {posts.map((p, k) => (
+              <mesh key={k} geometry={HB.post} material={mats.dark} position={[p[0], deckY - 0.2, p[1]]} scale={[1, 0.5, 1]} castShadow />
+            ))}
+            <Beam from={h.a} to={base} y0={vTop(E.a) - 0.01} y1={deckY + 0.02} w={0.07} h={0.03} mat={mats.dark} />
+            <Beam from={h.b} to={base} y0={vTop(E.b) - 0.01} y1={deckY + 0.02} w={0.07} h={0.03} mat={mats.dark} />
+            <mesh geometry={HB.post} material={mats.dark} position={[end[0], deckY + 0.22, end[1]]} scale={[0.6, 0.45, 0.6]} />
+            <sprite position={[end[0], Math.max(deckY, top) + 0.62, end[1]]} scale={[0.62, 0.62, 1]}>
+              <spriteMaterial map={harborTexture(h.kind, L, color, label, fonts)} depthWrite={false} />
+            </sprite>
+          </group>
+        );
+      })}
+    </>
+  );
+}
 
 // ---------------------------------------------------------------- medallions
 const medCache = new Map<string, THREE.CanvasTexture>();
@@ -810,6 +944,7 @@ function Ticker() {
 export function Scene({ view, theme, highlights, onPick, lastBuilt, mode }: SceneProps) {
   const { board } = view;
   const L = LOOKS[theme.id];
+  const lang = useStore((s) => s.settings.lang);
   const gl = useThree((s) => s.gl);
   useEffect(() => {
     gl.toneMappingExposure = L.exposure;
@@ -872,6 +1007,7 @@ export function Scene({ view, theme, highlights, onPick, lastBuilt, mode }: Scen
       <Island board={board} L={L} />
       <Props groups={decor} L={L} />
       <Medallions board={board} L={L} />
+      <Harbors board={board} L={L} theme={theme} lang={lang} vTop={vTop} />
 
       {Object.entries(view.roads).map(([id, seat]) => {
         const n = Number(id);

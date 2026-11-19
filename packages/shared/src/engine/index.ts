@@ -10,7 +10,7 @@
 export type { Situation } from './rules';
 export type { ApplyResult } from './game';
 
-export { generateBoard } from './board';
+export { generateBoard, coastalEdges, placeHarbors } from './board';
 export { createGame, applyAction } from './game';
 export { getView, totalPoints } from './view';
 export {
@@ -21,6 +21,7 @@ export {
   bankRate,
   canAfford,
   routeLength,
+  harborsOf,
   piecesLeft,
   publicPoints,
 } from './rules';

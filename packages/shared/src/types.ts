@@ -52,11 +52,21 @@ export interface Edge {
   a: number; // vertex id
   b: number; // vertex id
 }
+/**
+ * Harbour on a coastal edge. A player with a building on either end of `edge` trades with the bank at
+ * 3:1 for any resource (`kind: 'any'`) or 2:1 for the named resource.
+ */
+export interface Harbor {
+  edge: number;
+  kind: Resource | 'any';
+}
 export interface Board {
   size: MapSize;
   hexes: Hex[];
   vertices: Vertex[];
   edges: Edge[];
+  /** Coastal trade harbours. Optional only for boards saved before harbours existed. */
+  harbors?: Harbor[];
 }
 
 // ---------- Game state ----------
@@ -242,6 +252,8 @@ export const PIECE_LIMITS = { road: 15, outpost: 5, keep: 4, market: 3 } as cons
 export const HAND_LIMIT = 10;
 export const MIN_ROUTE_FOR_BONUS = 5;
 export const MIN_RAIDERS_FOR_BONUS = 3;
+/** Harbours per map: one 2:1 per resource (+1 extra on large) and the rest 3:1. */
+export const HARBOR_COUNTS = { standard: { any: 4, specific: 5 }, large: { any: 5, specific: 6 } } as const;
 
 export type Buyable = 'road' | 'outpost' | 'keep' | 'market' | 'card';
 export const COSTS: Record<Buyable, Partial<ResourceBag>> = {

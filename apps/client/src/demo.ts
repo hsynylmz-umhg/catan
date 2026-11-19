@@ -2,6 +2,7 @@
 // Optional: &step=roll|sevenChoice|moveBandit|steal|actions|setup|trade|finished|paused  &size=large
 import {
   PLAYER_COLORS,
+  placeHarbors,
   type Board,
   type ChatMessage,
   type Edge,
@@ -69,7 +70,9 @@ function demoBoard(large: boolean): Board {
       if (!barren) n++;
     }
   }
-  return { size: large ? 'large' : 'standard', hexes, vertices, edges };
+  const board: Board = { size: large ? 'large' : 'standard', hexes, vertices, edges };
+  board.harbors = placeHarbors(board, 11);
+  return board;
 }
 
 export interface DemoData {

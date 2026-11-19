@@ -164,7 +164,24 @@ export function bankRate(s: Situation, seat: Seat, give: Resource): number {
       if (TERRAIN_RESOURCE[s.board.hexes[h]!.terrain] === give) return 2;
     }
   }
-  return hasMarket ? 3 : 4;
+  let rate = hasMarket ? 3 : 4;
+  for (const h of s.board.harbors ?? []) {
+    const e = s.board.edges[h.edge];
+    if (!e) continue;
+    const owns = [e.a, e.b].some((v) => s.buildings[v]?.owner === seat);
+    if (!owns) continue;
+    if (h.kind === give) return 2;
+    if (h.kind === 'any') rate = Math.min(rate, 3);
+  }
+  return rate;
+}
+
+/** Harbours seat can use (has a building on either end of the harbour edge). */
+export function harborsOf(s: Situation, seat: Seat) {
+  return (s.board.harbors ?? []).filter((h) => {
+    const e = s.board.edges[h.edge];
+    return !!e && [e.a, e.b].some((v) => s.buildings[v]?.owner === seat);
+  });
 }
 
 /** Whether seat holds the cost. For a PlayerView only meaningful for the viewer's own seat. */

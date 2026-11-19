@@ -207,7 +207,7 @@ const tr = {
   'rules.3': 'Her tur zar atılır; sayısı tutan karolar köşelerindeki binalara üretir ({keep} iki kat). {bandit} olan karo üretmez.',
   'rules.4': '7 gelirse üretim olmaz: ya bankadan 2 kaynak haraç alırsın ya da {bandit} taşıyıp bir rakipten kaynak alırsın.',
   'rules.5': 'Binalar arasında en az bir boş köşe olmalı. Yeni {outpost} kendi yoluna bağlı olmalı.',
-  'rules.6': 'Banka takası 4:1; {market} sahibiysen 3:1, {market} komşusu karonun kaynağında 2:1.',
+  'rules.6': 'Banka takası 4:1. Kıyıdaki bir limanın köşesinde binan varsa o limanın oranı geçer: 3:1 her kaynak için, 2:1 yalnızca yazılı kaynak için. {market} de 3:1 verir, komşu karosunun kaynağında 2:1.',
   'rules.7': 'Tur sonunda elinde 10’dan fazla kaynak varsa fazlasını atarsın.',
   'rules.8': 'En Uzun Güzergâh: 5+ kesintisiz yol. En Güçlü Muhafız: 3+ oynanmış {raider}.',
 
@@ -486,7 +486,7 @@ const en: Record<Key, string> = {
   'rules.3': 'Each turn the dice are rolled; tiles with that number produce for buildings on their corners ({keep} double). The tile with the {bandit} produces nothing.',
   'rules.4': 'On a 7 nothing is produced: either take 2 resources from the bank as tribute, or move the {bandit} and take a resource from a rival.',
   'rules.5': 'Buildings need at least one empty corner between them. A new {outpost} must touch your own road.',
-  'rules.6': 'Bank trades are 4:1; 3:1 if you own a {market}, 2:1 for the resource of a tile next to your {market}.',
+  'rules.6': 'Bank trades are 4:1. A building on a corner of a coastal harbour gives that harbour’s rate: 3:1 for any resource, or 2:1 for the resource shown. A {market} also gives 3:1, and 2:1 for the resources of its neighbouring tiles.',
   'rules.7': 'If you hold more than 10 resources at end of turn you discard the excess.',
   'rules.8': 'Longest Route: 5+ continuous roads. Strongest Guard: 3+ played {raider}.',
 

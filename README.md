@@ -3,6 +3,14 @@
 Arkadaşlarla internet üzerinden oynanan, altıgen haritalı özgün bir kaynak–takas–inşa strateji oyunu.
 Web ve mobil (PWA) · 2–6 oyuncu · 3D veya 2D tahta · Türkçe / English · üç değiştirilebilir tema.
 
+<p align="center">
+  <a href="docs/media/kervan-yolu.mp4">
+    <img src="docs/media/tanitim.gif" alt="Kervan Yolu tanıtım klibinden bir bölüm: canlı 3D ada, oda kurma ve oynanış" width="720">
+  </a>
+  <br>
+  <a href="docs/media/kervan-yolu.mp4"><b>▶ Tanıtım klibini izle (23 sn, sesli)</b></a>
+</p>
+
 ## Hızlı başlangıç (geliştirme)
 ```bash
 npm install
